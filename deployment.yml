@@ -8,3 +8,12 @@ spec:
     matchLabels:
       app: website
   template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+        - name: website
+          image: swappykhot/website-prt-org:latest
+          ports:
+            - containerPort: 8080
