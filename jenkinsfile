@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = "swappykhot/website-prt-org:latest"
+    }
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    // Checkout code
+                    checkout scm
+
+                    // Build Docker image
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                }
+            }
+        }
+        stage('Push') {
+            steps {
+                script {
+                    // Push Docker image to DockerHub
+                    withDockerRegistry([credentialsId: '4395cf27-5953-4a0c-99a5-b3a8bec22be3', url: '']) {
+                        sh 'docker push ${DOCKER_IMAGE}'
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy to Kubernetes
+                    kubectl apply -f deployment.yml
+                    kubectl apply -f service.yml
+                }
+            }
+        }
+    }
+    triggers {
+        pollSCM('* * * * *')  // Poll every minute for changes
+    }
+}
